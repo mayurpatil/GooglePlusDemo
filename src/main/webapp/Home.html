@@ -1,0 +1,69 @@
+<html>
+
+<head>
+<title>Demo: Getting an email address using the Google+ Sign-in
+	button</title>
+<!-- Include the API client and Google+ client. -->
+<script src="https://plus.google.com/js/client:plusone.js"></script>
+</head>
+
+<body>
+	<!-- Container with the Sign-In button. -->
+	<div id="gConnect" class="button">
+		<button class="g-signin"
+			data-scope="email https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/plus.me"
+			data-clientid="1037787814417-fg0nfi90v2bsd3pp16aa2kbun1gl635g.apps.googleusercontent.com"
+			data-callback="onSignInCallback" data-theme="dark"
+			data-approvalprompt="force"
+			data-requestvisibleactions="http://schemas.google.com/CommentActivity http://schemas.google.com/ReviewActivity"
+			data-cookiepolicy="single_host_origin"></button>
+		<!-- Textarea for outputting data -->
+		<div id="response" class="hide">
+			<textarea id="responseContainer" style="width: 100%; height: 100%"></textarea>
+		</div>
+	</div>
+</body>
+
+<script type="text/javascript">
+	var token = null;
+	/**
+	 * Handler for the signin callback triggered after the user selects an account.
+	 */
+	function onSignInCallback(resp1) {
+		gapi.client.load('plus', 'v1', apiClientLoaded);
+		token = resp1.access_token;
+		//alert(token);
+	}
+
+	/**z
+	 * Sets up an API call after the Google API client loads.
+	 */
+	function apiClientLoaded() {
+		gapi.client.plus.people.get({
+			userId : 'me'
+		}).execute(handleEmailResponse);
+	}
+
+	/**
+	 * Response callback for when the API client receives a response.
+	 *
+	 * @param resp The API response object with the user email and profile information.
+	 */
+	function handleEmailResponse(resp1) {
+		var primaryEmail;
+		for (var i = 0; i < resp1.emails.length; i++) {
+			if (resp1.emails[i].type === 'account')
+				primaryEmail = resp1.emails[i].value;
+		}
+		document.getElementById('responseContainer').value = 'Primary email: '
+				+ primaryEmail + " ID: " + resp1.id + '\n\nFull Response:\n'
+				+ JSON.stringify(resp1);
+		
+		window.open("https://www.googleapis.com/plus/v1/people/" + resp1.id
+				+ "/activities/public?alt=json&access_token=" + token
+				+ "&maxResults=100");
+				
+	}
+</script>
+
+</html>
